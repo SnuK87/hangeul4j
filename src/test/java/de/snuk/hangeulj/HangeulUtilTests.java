@@ -2,7 +2,6 @@ package de.snuk.hangeulj;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -52,13 +51,9 @@ public class HangeulUtilTests {
 
     @Test
     public void testComposeSyllable() {
-	fail("Not yet implemented"); // TODO
-    }
+	char expected = '각';
+	char actual = HangeulUtil.composeSyllable(0, 0, 1);
 
-    @Test
-    public void testConvertFinalToInitial() {
-	// HangeulUtil.convertFinalToInitial(input)
-	fail("Not yet implemented"); // TODO
+	assertThat(actual).isEqualTo(expected);
     }
-
 }

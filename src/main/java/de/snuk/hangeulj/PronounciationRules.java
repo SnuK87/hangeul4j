@@ -14,74 +14,11 @@ import de.snuk.hangeulj.model.Types;
 public class PronounciationRules {
 
     // Rule 1
-    // static String checkLinking(String input) {
-    // if (input == null) {
-    // return null;
-    // }
-    //
-    // if (input.length() < 2) {
-    // return null;
-    // }
-    //
-    // char[] charArray = input.toCharArray();
-    // StringBuffer buffer = new StringBuffer();
-    //
-    // for (int i = 0; i < charArray.length; i++) {
-    // if (i == charArray.length - 1) {
-    // buffer.append(charArray[i]);
-    // break;
-    // }
-    //
-    // String normalize = normalize(charArray[i]);
-    //
-    // if (normalize.length() == 3) {
-    // if (normalize.substring(2).equals("ᆼ")) {
-    // buffer.append(charArray[i]);
-    // continue;
-    // }
-    //
-    // String normalize2 = normalize(charArray[i + 1]);
-    // String next = normalize2.substring(0, 1);
-    //
-    // if (next.equals("ᄋ")) {
-    // // erste silbe
-    // char composeSyllable =
-    // HangeulUtil.composeSyllable(toJamo(normalize.toCharArray()[0]),
-    // toJamo(normalize.toCharArray()[1]), 0);
-    //
-    // buffer.append(composeSyllable);
-    //
-    // char composeSyllable2;
-    //
-    // // zweite Silbe
-    // if (normalize2.toCharArray().length < 3) {
-    // composeSyllable2 = HangeulUtil.composeSyllable(
-    // toJamo(HangeulUtil.convertFinalToInitial(normalize.toCharArray()[2])),
-    // toJamo(normalize2.toCharArray()[1]), 0);
-    // } else {
-    // composeSyllable2 = HangeulUtil.composeSyllable(
-    // toJamo(HangeulUtil.convertFinalToInitial(normalize.toCharArray()[2])),
-    // toJamo(normalize2.toCharArray()[1]),
-    // toJamo(normalize2.toCharArray()[2]));
-    // }
-    //
-    // buffer.append(composeSyllable2);
-    // i = i + 1;
-    // }
-    // } else {
-    // buffer.append(charArray[i]);
-    // }
-    // }
-    //
-    // return buffer.toString();
-    // }
-
     static HangeulWord checkLinking(HangeulWord input) {
 	if (input == null) {
 	    return null;
 	}
 
-	// StringBuffer buffer = new StringBuffer();
 	List<HangeulSyllable> syllables = input.getSyllables();
 
 	for (int i = 0; i < syllables.size(); i++) {
@@ -96,48 +33,8 @@ public class PronounciationRules {
 	    }
 	}
 
-	// syllables.forEach(s -> buffer.append(s.toChar()));
-
 	return input;
     }
-
-    // // Rule 2
-    // static String checkNeutralization(String input) {
-    // char[] charArray = input.toCharArray();
-    //
-    // StringBuffer output = new StringBuffer();
-    //
-    // for (char element : charArray) {
-    // String normalize = normalize(element);
-    // String substring = normalize.substring(2);
-    //
-    // char[] charArray2 = normalize.toCharArray();
-    // int eins = toJamo(charArray2[0]);
-    // int zwei = toJamo(charArray2[1]);
-    //
-    // if (substring.equals("ᆨ") || substring.equals("ᆩ") ||
-    // substring.equals("ᆿ")) {
-    // char composeSyllable = HangeulUtil.composeSyllable(eins, zwei, 1);
-    // output.append(composeSyllable);
-    //
-    // } else if (substring.equals("ᆮ") || substring.equals("ᆺ") ||
-    // substring.equals("ᆻ") || substring.equals("ᆽ")
-    // || substring.equals("ᆾ") || substring.equals("ᇀ") ||
-    // substring.equals("ᇂ")) {
-    // char composeSyllable = HangeulUtil.composeSyllable(eins, zwei, 7);
-    // output.append(composeSyllable);
-    //
-    // } else if (substring.equals("ᆸ") || substring.equals("ᇁ")) {
-    // char composeSyllable = HangeulUtil.composeSyllable(eins, zwei, 17);
-    // output.append(composeSyllable);
-    //
-    // } else {
-    // output.append(element);
-    // }
-    // }
-    //
-    // return output.toString();
-    // }
 
     // Rule 2
     static HangeulWord checkNeutralization(HangeulWord input) {
@@ -152,17 +49,14 @@ public class PronounciationRules {
 	    int jamo = currentSyllable.getFinall().getJamo();
 
 	    if (jamo == 1 || jamo == 2 || jamo == 24) {
-		// = 1
 		currentSyllable.replaceFinal(HangeulChar.ofJamo(1, Types.FINAL));
 	    }
 
 	    if (jamo == 7 || jamo == 19 || jamo == 20 || jamo == 22 || jamo == 23 || jamo == 25 || jamo == 27) {
-		// 7
 		currentSyllable.replaceFinal(HangeulChar.ofJamo(7, Types.FINAL));
 	    }
 
 	    if (jamo == 17 || jamo == 26) {
-		// = 17
 		currentSyllable.replaceFinal(HangeulChar.ofJamo(17, Types.FINAL));
 	    }
 
@@ -319,56 +213,6 @@ public class PronounciationRules {
 	return input;
     }
 
-    // rule7
-    // public static String checkPalatalization(String input) {
-    // HangeulUtilContract.isNotNull(input);
-    // StringBuffer output = new StringBuffer();
-    //
-    // char[] syllables = input.toCharArray();
-    //
-    // for (int i = 0; i < syllables.length; i++) {
-    // if (i == syllables.length - 1) {
-    // output.append(syllables[i]);
-    // break;
-    // }
-    //
-    // String currentSyllable = normalize(syllables[i]);
-    //
-    // if (currentSyllable.length() < 3) {
-    // output.append(syllables[i]);
-    // continue;
-    // }
-    //
-    // int currentFinalJamo = toJamo(currentSyllable.charAt(2));
-    //
-    // if (currentFinalJamo == 7) {
-    // String nextSyllable = normalize(syllables[i + 1]);
-    // if ((HangeulUtil.doesNextSyllableStartsWithJamo(11, nextSyllable)
-    // || HangeulUtil.doesNextSyllableStartsWithJamo(18, nextSyllable))
-    // && HangeulUtil.doesNextSyllablesMedialIsJamo(20, nextSyllable)) {
-    // char composeSyllable =
-    // HangeulUtil.composeSyllable(toJamo(currentSyllable.charAt(0)),
-    // toJamo(currentSyllable.charAt(1)), 22);
-    // output.append(composeSyllable);
-    // }
-    // } else if (currentFinalJamo == 25) {
-    // String nextSyllable = normalize(syllables[i + 1]);
-    // if ((HangeulUtil.doesNextSyllableStartsWithJamo(11, nextSyllable)
-    // || HangeulUtil.doesNextSyllableStartsWithJamo(18, nextSyllable))
-    // && HangeulUtil.doesNextSyllablesMedialIsJamo(20, nextSyllable)) {
-    // char composeSyllable =
-    // HangeulUtil.composeSyllable(toJamo(currentSyllable.charAt(0)),
-    // toJamo(currentSyllable.charAt(1)), 23);
-    // output.append(composeSyllable);
-    // }
-    // } else {
-    // output.append(syllables[i]);
-    // }
-    // }
-    //
-    // return output.toString();
-    // }
-
     // rule 7
     public static HangeulWord checkPalatalization(HangeulWord input) {
 
@@ -406,53 +250,6 @@ public class PronounciationRules {
     }
 
     // rule 8
-    // public static String checkHOmission(String input) {
-    // // TODO gilt es auch für lh? jamo=15
-    //
-    // HangeulUtilContract.isNotNull(input);
-    // StringBuffer output = new StringBuffer();
-    //
-    // char[] syllables = input.toCharArray();
-    //
-    // for (int i = 0; i < syllables.length; i++) {
-    // if (i == syllables.length - 1) {
-    // output.append(syllables[i]);
-    // break;
-    // }
-    //
-    // String currentSyllable = normalize(syllables[i]);
-    //
-    // if (currentSyllable.length() < 3) {
-    // output.append(syllables[i]);
-    // continue;
-    // }
-    //
-    // int currentFinalJamo = toJamo(currentSyllable.charAt(2));
-    //
-    // if (currentFinalJamo == 27) {
-    // String nextSyllable = normalize(syllables[i + 1]);
-    // if (HangeulUtil.doesNextSyllableStartsWithJamo(11, nextSyllable)) {
-    // char composeSyllable =
-    // HangeulUtil.composeSyllable(toJamo(currentSyllable.charAt(0)),
-    // toJamo(currentSyllable.charAt(1)), 0);
-    // output.append(composeSyllable);
-    // }
-    // } else if (currentFinalJamo == 6) {
-    // String nextSyllable = normalize(syllables[i + 1]);
-    // if (HangeulUtil.doesNextSyllableStartsWithJamo(11, nextSyllable)) {
-    // char composeSyllable =
-    // HangeulUtil.composeSyllable(toJamo(currentSyllable.charAt(0)),
-    // toJamo(currentSyllable.charAt(1)), 4);
-    // output.append(composeSyllable);
-    // }
-    // } else {
-    // output.append(syllables[i]);
-    // }
-    // }
-    //
-    // return output.toString();
-    // }
-
     public static HangeulWord checkHOmission(HangeulWord input) {
 	// TODO gilt es auch für lh? jamo=15
 

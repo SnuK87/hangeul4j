@@ -1,9 +1,12 @@
 package de.snuk.hangeulj;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import de.snuk.hangeulj.model.HangeulChar;
 import de.snuk.hangeulj.model.Types;
@@ -30,15 +33,6 @@ public class HangeulUtil {
 	finalToInitialMap.put("11c0", "1110");
 	finalToInitialMap.put("11b1", "1111");
 	finalToInitialMap.put("11b2", "1112");
-    }
-
-    public static void main(String[] args) {
-	char c = 'ᄔ';
-	String normalize = HangeulUtil.normalize(c);
-	System.out.println(">" + normalize + "<");
-
-	System.out.println(toJamo(c));
-
     }
 
     public static String normalize(char input) {
@@ -116,41 +110,36 @@ public class HangeulUtil {
 	return retVal;
     }
 
-    public static Types getType(char input) {
+    public static Optional<Types> getType(char input) {
 	String hexString = Integer.toHexString(input);
+	int decimal = Integer.parseInt(hexString, 16);
+	Optional<Types> retVal = Optional.empty();
 
-	// initial 1100 bis 1112
-	if (hexString.startsWith("111")) {
-	    return Types.INITIAL;
+	if (decimal >= 4352 && decimal <= 4370) {
+	    retVal = Optional.of(Types.INITIAL);
 	}
 
-	if (hexString.startsWith("110")) {
-	    return Types.INITIAL;
+	if (decimal >= 4449 && decimal <= 4469) {
+	    retVal = Optional.of(Types.MEDIAL);
 	}
 
-	// medial 1161 bis 1175
-	if (hexString.startsWith("116")) {
-	    return Types.MEDIAL;
+	if (decimal >= 4520 && decimal <= 4546) {
+	    retVal = Optional.of(Types.FINAL);
 	}
 
-	if (hexString.startsWith("117")) {
-	    return Types.MEDIAL;
-	}
+	return retVal;
+    }
 
-	// final 11A8 bis 11C2
-	if (hexString.startsWith("11a")) {
-	    return Types.FINAL;
-	}
+    public static void main(String[] args) {
+	char a = 'ᄂ';
+	char b = 'ᄦ';
 
-	if (hexString.startsWith("11b")) {
-	    return Types.FINAL;
-	}
+	Optional<Types> type = getType(a);
+	Optional<Types> type2 = getType(b);
 
-	if (hexString.startsWith("11c")) {
-	    return Types.FINAL;
-	}
+	System.out.println(type.orElseThrow(() -> new NullPointerException()));
+	System.out.println(type2.orElseThrow(() -> new NullPointerException()));
 
-	return null;
     }
 
     /**
@@ -162,9 +151,9 @@ public class HangeulUtil {
      * @return
      */
     public static char composeSyllable(int jamoInitial, int jamoMedial, int jamoFinal) {
-	// isValueBetween(jamoInitial, 0, 18, "jamoInitial");
-	// isValueBetween(jamoMedial, 0, 20, "jamoMedial");
-	// isValueBetween(jamoFinal, 0, 27, "jamoFinal");
+	checkArgument(jamoInitial >= 0 && jamoInitial <= 18, "Invalid Argument for jamoInitial");
+	checkArgument(jamoMedial >= 0 && jamoMedial <= 20, "Invalid Argument for jamoMedial");
+	checkArgument(jamoFinal >= 0 && jamoFinal <= 27, "Invalid Argument for jamoFinal");
 
 	int composed = ((jamoInitial * 588) + (jamoMedial * 28) + jamoFinal) + 44032;
 
@@ -172,26 +161,11 @@ public class HangeulUtil {
     }
 
     /**
-     * Converts Final consonant Char to Initial consonant hexString
+     * Converts Final consonant to Initial consonant
      *
      * @param input
      * @return
      */
-    // public static char convertFinalToInitial(char input) {
-    // String string = finalToInitialMap.get(Integer.toHexString(input));
-    //
-    // int parseInt = 0;
-    //
-    // if (string == null) {
-    // System.out.println("Unable to convert " + input + " to initial
-    // consonant");
-    // } else {
-    // parseInt = Integer.parseInt(string, 16);
-    // }
-    //
-    // return (char) parseInt;
-    // }
-
     public static HangeulChar convertFinalToInitialString(HangeulChar input) {
 	String unicode = input.getUnicode().toLowerCase();
 	String string = finalToInitialMap.get(unicode);
@@ -201,22 +175,4 @@ public class HangeulUtil {
 
 	return of;
     }
-
-    // public static boolean doesNextSyllableStartsWithJamo(int jamo, String
-    // nextSyllable) {
-    // if (toJamo(nextSyllable.charAt(0)) == jamo) {
-    // return true;
-    // }
-    //
-    // return false;
-    // }
-
-    // public static boolean doesNextSyllablesMedialIsJamo(int jamo, String
-    // nextSyllable) {
-    // if (toJamo(nextSyllable.charAt(1)) == jamo) {
-    // return true;
-    // }
-    //
-    // return false;
-    // }
 }
