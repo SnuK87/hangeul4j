@@ -241,7 +241,7 @@ public class PronounciationRules {
 
     // rule5
     public static String checkFortis(String input) {
-	HangeulUtilContract.isNotNull(input);
+	// HangeulUtilContract.isNotNull(input);
 	StringBuffer output = new StringBuffer();
 
 	char[] syllables = input.toCharArray();

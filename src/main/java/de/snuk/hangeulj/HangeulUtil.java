@@ -1,7 +1,5 @@
 package de.snuk.hangeulj;
 
-import static de.snuk.hangeulj.HangeulUtilContract.isValueBetween;
-
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.HashMap;
@@ -34,56 +32,37 @@ public class HangeulUtil {
 	finalToInitialMap.put("11b2", "1112");
     }
 
+    public static void main(String[] args) {
+	char c = 'ᄔ';
+	String normalize = HangeulUtil.normalize(c);
+	System.out.println(">" + normalize + "<");
+
+	System.out.println(toJamo(c));
+
+    }
+
     public static String normalize(char input) {
-
-	if (input == '\u0000') {
-	    throw new NullPointerException("input must never be null.");
-	}
-
 	return Normalizer.normalize(String.valueOf(input), Form.NFD);
     }
 
     public static int toJamo(char input) {
 	String hexString = Integer.toHexString(input);
+	int decimal = Integer.parseInt(hexString, 16);
 	int retVal = -1;
-	int parseInt = Integer.parseInt(hexString.substring(3), 16);
 
-	// initial 1100 bis 1112
-	if (hexString.startsWith("111")) {
-	    int start = 16;
-	    retVal = start + parseInt;
+	// initial
+	if (decimal >= 4352 && decimal <= 4370) {
+	    retVal = decimal - 4352;
 	}
 
-	if (hexString.startsWith("110")) {
-	    int start = 0;
-	    retVal = start + parseInt;
+	// medial
+	if (decimal >= 4449 && decimal <= 4469) {
+	    retVal = decimal - 4449;
 	}
 
-	// medial 1161 bis 1175
-	if (hexString.startsWith("116")) {
-	    int start = 0;
-	    retVal = start + parseInt - 1;
-	}
-
-	if (hexString.startsWith("117")) {
-	    int start = 16;
-	    retVal = start + parseInt - 1;
-	}
-
-	// final 11A8 bis 11C2
-	if (hexString.startsWith("11a")) {
-	    int start = 0;
-	    retVal = start + parseInt - 7;
-	}
-
-	if (hexString.startsWith("11b")) {
-	    int start = 16;
-	    retVal = start + parseInt - 7;
-	}
-
-	if (hexString.startsWith("11c")) {
-	    int start = 32;
-	    retVal = start + parseInt - 7;
+	// final
+	if (decimal >= 4520 && decimal <= 4546) {
+	    retVal = decimal - 4520 + 1;
 	}
 
 	return retVal;
@@ -135,50 +114,6 @@ public class HangeulUtil {
 	}
 
 	return retVal;
-
-	// String hexString = Integer.toHexString(input);
-	// int retVal = -1;
-	// int parseInt = Integer.parseInt(hexString.substring(3), 16);
-	//
-	// // initial 1100 bis 1112
-	// if (hexString.startsWith("111")) {
-	// int start = 16;
-	// retVal = start + parseInt;
-	// }
-	//
-	// if (hexString.startsWith("110")) {
-	// int start = 0;
-	// retVal = start + parseInt;
-	// }
-	//
-	// // medial 1161 bis 1175
-	// if (hexString.startsWith("116")) {
-	// int start = 0;
-	// retVal = start + parseInt - 1;
-	// }
-	//
-	// if (hexString.startsWith("117")) {
-	// int start = 16;
-	// retVal = start + parseInt - 1;
-	// }
-	//
-	// // final 11A8 bis 11C2
-	// if (hexString.startsWith("11a")) {
-	// int start = 0;
-	// retVal = start + parseInt - 7;
-	// }
-	//
-	// if (hexString.startsWith("11b")) {
-	// int start = 16;
-	// retVal = start + parseInt - 7;
-	// }
-	//
-	// if (hexString.startsWith("11c")) {
-	// int start = 32;
-	// retVal = start + parseInt - 7;
-	// }
-	//
-	// return retVal;
     }
 
     public static Types getType(char input) {
@@ -227,9 +162,9 @@ public class HangeulUtil {
      * @return
      */
     public static char composeSyllable(int jamoInitial, int jamoMedial, int jamoFinal) {
-	isValueBetween(jamoInitial, 0, 18, "jamoInitial");
-	isValueBetween(jamoMedial, 0, 20, "jamoMedial");
-	isValueBetween(jamoFinal, 0, 27, "jamoFinal");
+	// isValueBetween(jamoInitial, 0, 18, "jamoInitial");
+	// isValueBetween(jamoMedial, 0, 20, "jamoMedial");
+	// isValueBetween(jamoFinal, 0, 27, "jamoFinal");
 
 	int composed = ((jamoInitial * 588) + (jamoMedial * 28) + jamoFinal) + 44032;
 
@@ -242,19 +177,20 @@ public class HangeulUtil {
      * @param input
      * @return
      */
-    public static char convertFinalToInitial(char input) {
-	String string = finalToInitialMap.get(Integer.toHexString(input));
-
-	int parseInt = 0;
-
-	if (string == null) {
-	    System.out.println("Unable to convert " + input + " to initial consonant");
-	} else {
-	    parseInt = Integer.parseInt(string, 16);
-	}
-
-	return (char) parseInt;
-    }
+    // public static char convertFinalToInitial(char input) {
+    // String string = finalToInitialMap.get(Integer.toHexString(input));
+    //
+    // int parseInt = 0;
+    //
+    // if (string == null) {
+    // System.out.println("Unable to convert " + input + " to initial
+    // consonant");
+    // } else {
+    // parseInt = Integer.parseInt(string, 16);
+    // }
+    //
+    // return (char) parseInt;
+    // }
 
     public static HangeulChar convertFinalToInitialString(HangeulChar input) {
 	String unicode = input.getUnicode().toLowerCase();
@@ -266,19 +202,21 @@ public class HangeulUtil {
 	return of;
     }
 
-    public static boolean doesNextSyllableStartsWithJamo(int jamo, String nextSyllable) {
-	if (toJamo(nextSyllable.charAt(0)) == jamo) {
-	    return true;
-	}
+    // public static boolean doesNextSyllableStartsWithJamo(int jamo, String
+    // nextSyllable) {
+    // if (toJamo(nextSyllable.charAt(0)) == jamo) {
+    // return true;
+    // }
+    //
+    // return false;
+    // }
 
-	return false;
-    }
-
-    public static boolean doesNextSyllablesMedialIsJamo(int jamo, String nextSyllable) {
-	if (toJamo(nextSyllable.charAt(1)) == jamo) {
-	    return true;
-	}
-
-	return false;
-    }
+    // public static boolean doesNextSyllablesMedialIsJamo(int jamo, String
+    // nextSyllable) {
+    // if (toJamo(nextSyllable.charAt(1)) == jamo) {
+    // return true;
+    // }
+    //
+    // return false;
+    // }
 }
