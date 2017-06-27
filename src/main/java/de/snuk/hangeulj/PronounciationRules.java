@@ -133,18 +133,74 @@ public class PronounciationRules {
 	return null;
     }
 
-    // rule5
-    public static String checkFortis(String input) {
-	// HangeulUtilContract.isNotNull(input);
-	StringBuffer output = new StringBuffer();
+    // rule4
+    public static HangeulWord checkNasalization(HangeulWord input) {
 
-	char[] syllables = input.toCharArray();
+	List<HangeulSyllable> syllables = input.getSyllables();
 
-	for (char syllable : syllables) {
+	for (int i = 0; i < syllables.size(); i++) {
 
+	    if (i == syllables.size() - 1) {
+		break;
+	    }
+
+	    HangeulSyllable currentSyllable = syllables.get(i);
+
+	    if (currentSyllable.getFinall() == null) {
+		continue;
+	    }
+
+	    int currentFinalJamo = currentSyllable.getFinall().getJamo();
+	    int nextInitialJamo = syllables.get(i + 1).getInitial().getJamo();
+
+	    if (currentFinalJamo == 1) {
+		if (nextInitialJamo == 2 || nextInitialJamo == 6 || nextInitialJamo == 11) {
+		    currentSyllable.replaceFinal(HangeulChar.ofJamo(21, Types.FINAL));
+		}
+	    }
+
+	    if (currentFinalJamo == 7) {
+		if (nextInitialJamo == 2 || nextInitialJamo == 6 || nextInitialJamo == 11) {
+		    currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+		}
+	    }
+
+	    if (currentFinalJamo == 17) {
+		if (nextInitialJamo == 2 || nextInitialJamo == 6 || nextInitialJamo == 11) {
+		    currentSyllable.replaceFinal(HangeulChar.ofJamo(16, Types.FINAL));
+		}
+	    }
 	}
 
-	return output.toString();
+	return input;
+    }
+
+    // rule5
+    public static HangeulWord checkFortis(HangeulWord input) {
+
+	List<HangeulSyllable> syllables = input.getSyllables();
+	for (int i = 0; i < syllables.size(); i++) {
+
+	    if (i == syllables.size() - 1) {
+		break;
+	    }
+
+	    HangeulSyllable currentSyllable = syllables.get(i);
+	    int currentJamo = currentSyllable.getFinall().getJamo();
+
+	    // TODO: sind das alle obstruents?
+	    if (currentJamo == 1 || currentJamo == 7 || currentJamo == 17 || currentJamo == 19 || currentJamo == 22) {
+		HangeulSyllable nextSyllable = syllables.get(i + 1);
+		int nextInitialJamo = nextSyllable.getInitial().getJamo();
+
+		if (nextInitialJamo == 0 || nextInitialJamo == 3 || nextInitialJamo == 7 || nextInitialJamo == 9
+			|| nextInitialJamo == 12) {
+		    nextSyllable.replaceInitial(HangeulChar.ofJamo(nextInitialJamo + 1, Types.INITIAL));
+		}
+	    }
+	}
+
+	return input;
     }
 
     // rule6
@@ -155,8 +211,6 @@ public class PronounciationRules {
 	    HangeulSyllable currentSyllable = syllables.get(i);
 
 	    if (currentSyllable.getInitial().getJamo() == 18) {
-		// TODO double final consonants beachten
-
 		HangeulSyllable previousSyllable = syllables.get(i - 1);
 
 		int prevJamo = previousSyllable.getFinall().getJamo();
@@ -180,9 +234,78 @@ public class PronounciationRules {
 		    previousSyllable.replaceFinal(null);
 		    currentSyllable.replaceInitial(HangeulChar.ofJamo(14, Types.INITIAL));
 		}
+
+		if (prevJamo == 5) {
+		    previousSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+		    currentSyllable.replaceInitial(HangeulChar.ofJamo(14, Types.INITIAL));
+		}
+
+		if (prevJamo == 9) {
+		    previousSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+		    currentSyllable.replaceInitial(HangeulChar.ofJamo(15, Types.INITIAL));
+		}
+
+		if (prevJamo == 11) {
+		    previousSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+		    currentSyllable.replaceInitial(HangeulChar.ofJamo(17, Types.INITIAL));
+		}
 	    }
 
 	    if (currentSyllable.getFinall() != null) {
+
+		// ㅀ
+		if (currentSyllable.getFinall().getJamo() == 15) {
+		    HangeulSyllable nextSyllable = syllables.get(i + 1);
+		    int nextJamo = nextSyllable.getInitial().getJamo();
+
+		    if (nextJamo == 0) {
+			currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+			nextSyllable.replaceInitial(HangeulChar.ofJamo(15, Types.INITIAL));
+		    }
+
+		    if (nextJamo == 3) {
+			currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+			nextSyllable.replaceInitial(HangeulChar.ofJamo(16, Types.INITIAL));
+		    }
+
+		    if (nextJamo == 7) {
+			currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+			nextSyllable.replaceInitial(HangeulChar.ofJamo(17, Types.INITIAL));
+		    }
+
+		    if (nextJamo == 12) {
+			currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+			nextSyllable.replaceInitial(HangeulChar.ofJamo(14, Types.INITIAL));
+		    }
+		}
+
+		// ㄶ
+		if (currentSyllable.getFinall().getJamo() == 6) {
+		    HangeulSyllable nextSyllable = syllables.get(i + 1);
+		    int nextJamo = nextSyllable.getInitial().getJamo();
+
+		    if (nextJamo == 0) {
+			currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+			nextSyllable.replaceInitial(HangeulChar.ofJamo(15, Types.INITIAL));
+		    }
+
+		    if (nextJamo == 3) {
+			currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+			nextSyllable.replaceInitial(HangeulChar.ofJamo(16, Types.INITIAL));
+		    }
+
+		    if (nextJamo == 7) {
+			currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+			nextSyllable.replaceInitial(HangeulChar.ofJamo(17, Types.INITIAL));
+		    }
+
+		    if (nextJamo == 12) {
+			currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+			nextSyllable.replaceInitial(HangeulChar.ofJamo(14, Types.INITIAL));
+		    }
+		}
+
+		// ㅎ
 		if (currentSyllable.getFinall().getJamo() == 27) {
 		    HangeulSyllable nextSyllable = syllables.get(i + 1);
 		    int nextJamo = nextSyllable.getInitial().getJamo();
@@ -251,8 +374,6 @@ public class PronounciationRules {
 
     // rule 8
     public static HangeulWord checkHOmission(HangeulWord input) {
-	// TODO gilt es auch für lh? jamo=15
-
 	List<HangeulSyllable> syllables = input.getSyllables();
 	for (int i = 0; i < syllables.size(); i++) {
 	    HangeulSyllable currentSyllable = syllables.get(i);
@@ -276,6 +397,10 @@ public class PronounciationRules {
 		if (nextSyllable.getInitial().getJamo() == 11) {
 		    currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
 		}
+	    } else if (finalConsonant.getJamo() == 15) {
+		if (nextSyllable.getInitial().getJamo() == 11) {
+		    currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+		}
 	    }
 	}
 
@@ -294,22 +419,38 @@ public class PronounciationRules {
 	asList2.stream().map(HangeulWord::of).map(PronounciationRules::checkNeutralization)
 		.forEach(System.out::println);
 
-	// rule6
-	System.out.println("#### RULE 6 ####");
-	List<String> asList6 = Arrays.asList("국화", "맏형", "입학", "앉히다", "놓구", "놓다", "놓지", "많다");
-	asList6.stream().map(HangeulWord::of).map(PronounciationRules::checkAspiration).forEach(System.out::println);
+	// // rule 4
+	// System.out.println("#### RULE 4 ####");
+	// // TODO: watch 앞마당 and 있는 !!
+	// Arrays.asList("앞마당", "믿는다", "한국말", "입는", "있는",
+	// "학년").stream().map(HangeulWord::of)
+	// .map(PronounciationRules::checkNasalization).forEach(System.out::println);
 
-	// rule7
-	System.out.println("#### RULE 7 ####");
-	// TODO: watch "굳히다"!!
-	List<String> asList7 = Arrays.asList("굳이", "맏이", "해돋이", "같이", "끝이", "굳히다");
-	asList7.stream().map(HangeulWord::of).map(PronounciationRules::checkPalatalization)
-		.forEach(System.out::println);
-
-	// rule8
-	System.out.println("#### RULE 8 ####");
-	List<String> asList8 = Arrays.asList("좋아요", "좋은", "촣을", "많아요", "많은", "많을");
-	asList8.stream().map(HangeulWord::of).map(PronounciationRules::checkHOmission).forEach(System.out::println);
-
+	// // rule5
+	// System.out.println("#### RULE 5 ####");
+	// // TODO: watch 꽃밭 !!
+	// Arrays.asList("학교", "받다", "꽃밭", "국수", "국자",
+	// "책상").stream().map(HangeulWord::of)
+	// .map(PronounciationRules::checkFortis).forEach(System.out::println);
+	//
+	// // rule6
+	// System.out.println("#### RULE 6 ####");
+	// List<String> asList6 = Arrays.asList("국화", "맏형", "입학", "앉히다", "놓구",
+	// "놓다", "놓지", "많다");
+	// asList6.stream().map(HangeulWord::of).map(PronounciationRules::checkAspiration).forEach(System.out::println);
+	//
+	// // rule7
+	// System.out.println("#### RULE 7 ####");
+	// // TODO: watch "굳히다"!!
+	// List<String> asList7 = Arrays.asList("굳이", "맏이", "해돋이", "같이", "끝이",
+	// "굳히다");
+	// asList7.stream().map(HangeulWord::of).map(PronounciationRules::checkPalatalization)
+	// .forEach(System.out::println);
+	//
+	// // rule8
+	// System.out.println("#### RULE 8 ####");
+	// List<String> asList8 = Arrays.asList("좋아요", "좋은", "촣을", "많아요", "많은",
+	// "많을");
+	// asList8.stream().map(HangeulWord::of).map(PronounciationRules::checkHOmission).forEach(System.out::println);
     }
 }
