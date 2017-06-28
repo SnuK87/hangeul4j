@@ -1,56 +1,62 @@
 package de.snuk.hangeulj.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import de.snuk.hangeulj.HangeulUtil;
 
 public class HangeulSyllable {
 
-    private HangeulChar initial;
-    private HangeulChar medial;
-    private HangeulChar finall;
+    private InitialConsonant initial;
+    private MedialVowel medial;
+    private FinalConsonant finall;
 
-    public HangeulSyllable(HangeulChar initial, HangeulChar medial) {
-	this.initial = initial;
-	this.medial = medial;
-    }
-
-    public HangeulSyllable(HangeulChar initial, HangeulChar medial, HangeulChar finall) {
+    private HangeulSyllable(InitialConsonant initial, MedialVowel medial, FinalConsonant finall) {
 	this.initial = initial;
 	this.medial = medial;
 	this.finall = finall;
     }
 
-    public static HangeulSyllable ofString(String input) {
-	// string lenght = 1
-	String normalize = HangeulUtil.normalize(input.charAt(0));
+    public static HangeulSyllable of(char input) {
+	String normalize = HangeulUtil.normalize(input);
+
+	int jamoInit = HangeulUtil.toJamo(normalize.charAt(0));
+	int jamoMedial = HangeulUtil.toJamo(normalize.charAt(1));
 
 	if (normalize.length() == 2) {
-	    return new HangeulSyllable(HangeulChar.of(normalize.charAt(0)), HangeulChar.of(normalize.charAt(1)));
+	    return new HangeulSyllable(InitialConsonant.ofJamo(jamoInit), MedialVowel.ofJamo(jamoMedial),
+		    FinalConsonant.EMPTY);
 	}
 
-	return new HangeulSyllable(HangeulChar.of(normalize.charAt(0)), HangeulChar.of(normalize.charAt(1)),
-		HangeulChar.of(normalize.charAt(2)));
+	int jamoFinal = HangeulUtil.toJamo(normalize.charAt(2));
+
+	return new HangeulSyllable(InitialConsonant.ofJamo(jamoInit), MedialVowel.ofJamo(jamoMedial),
+		FinalConsonant.ofJamo(jamoFinal));
     }
 
-    public HangeulChar getInitial() {
+    public InitialConsonant getInitial() {
 	return initial;
     }
 
-    public HangeulChar getMedial() {
+    public MedialVowel getMedial() {
 	return medial;
     }
 
-    public HangeulChar getFinall() {
+    public FinalConsonant getFinall() {
 	return finall;
     }
 
-    public void replaceInitial(HangeulChar newInitial) {
-	// TODO check:
-	initial = newInitial;
+    public HangeulSyllable replaceInitial(InitialConsonant newInitial) {
+	checkNotNull(newInitial, "Initial consosant can't be replaced by null.");
+	// initial = newInitial;
+
+	return new HangeulSyllable(newInitial, medial, finall);
     }
 
-    public void replaceFinal(HangeulChar newFinal) {
-	// TODO check:
-	finall = newFinal;
+    public HangeulSyllable replaceFinal(FinalConsonant newFinal) {
+	checkNotNull(newFinal, "Final consosant can't be replaced by null. Consider using FinalConsonant.EMPTY");
+	// finall = newFinal;
+
+	return new HangeulSyllable(initial, medial, newFinal);
     }
 
     public char toChar() {
@@ -61,4 +67,6 @@ public class HangeulSyllable {
     public String toString() {
 	return "HangeulSyllable [initial=" + initial + ", medial=" + medial + ", finall=" + finall + "]";
     }
+
+    // TODO equals / hashcode
 }

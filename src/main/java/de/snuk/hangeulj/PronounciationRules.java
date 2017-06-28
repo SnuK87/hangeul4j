@@ -1,206 +1,197 @@
 package de.snuk.hangeulj;
 
-import java.util.Arrays;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static de.snuk.hangeulj.model.FinalConsonant.ㄱ;
+import static de.snuk.hangeulj.model.FinalConsonant.ㄷ;
+import static de.snuk.hangeulj.model.FinalConsonant.ㅂ;
+import static de.snuk.hangeulj.model.FinalConsonant.ㅅ;
+import static de.snuk.hangeulj.model.FinalConsonant.ㅈ;
+
+import java.util.LinkedList;
 import java.util.List;
 
-import de.snuk.hangeulj.model.HangeulChar;
+import de.snuk.hangeulj.model.FinalConsonant;
 import de.snuk.hangeulj.model.HangeulSyllable;
 import de.snuk.hangeulj.model.HangeulWord;
-import de.snuk.hangeulj.model.Types;
+import de.snuk.hangeulj.model.InitialConsonant;
+import de.snuk.hangeulj.model.MedialVowel;
 
-public class PronounciationRules {
+public final class PronounciationRules {
+
+    private PronounciationRules() {
+    }
 
     // Rule 1
-    static HangeulWord checkLinking(HangeulWord input) {
-	if (input == null) {
-	    return null;
-	}
+    public static HangeulWord checkLinking(HangeulWord input) {
+	checkNotNull(input);
 
 	List<HangeulSyllable> syllables = input.getSyllables();
+	List<HangeulSyllable> newSyllables = new LinkedList<>(syllables);
 
 	for (int i = 0; i < syllables.size(); i++) {
-	    if (syllables.get(i).getFinall() != null) {
-		if (syllables.get(i + 1).getInitial().getJamo() == 11) {
-		    HangeulChar newInit = HangeulUtil.convertFinalToInitialString(syllables.get(i).getFinall());
-		    syllables.get(i).replaceFinal(null);
-		    syllables.get(i + 1).replaceInitial(newInit);
+	    if (i == syllables.size() - 1) {
+		break;
+	    }
 
-		    i = i + 1;
+	    HangeulSyllable currentSyllable = syllables.get(i);
+
+	    if (syllables.get(i).getFinall() != FinalConsonant.EMPTY) {
+		HangeulSyllable nextSyllable = syllables.get(i + 1);
+
+		if (nextSyllable.getInitial() == InitialConsonant.ㅇ) {
+		    InitialConsonant newInit = HangeulUtil.convertFinalToInitial(currentSyllable.getFinall());
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.EMPTY));
+		    newSyllables.set(i + 1, nextSyllable.replaceInitial(newInit));
+		    i++;
 		}
 	    }
 	}
 
-	return input;
+	return HangeulWord.ofList(newSyllables);
     }
 
     // Rule 2
-    static HangeulWord checkNeutralization(HangeulWord input) {
+    public static HangeulWord checkNeutralization(HangeulWord input) {
+	checkNotNull(input);
+
 	List<HangeulSyllable> syllables = input.getSyllables();
+	List<HangeulSyllable> newSyllables = new LinkedList<>(syllables);
+
 	for (int i = 0; i < syllables.size(); i++) {
 	    HangeulSyllable currentSyllable = syllables.get(i);
 
-	    if (currentSyllable.getFinall() == null) {
+	    if (currentSyllable.getFinall() == FinalConsonant.EMPTY) {
 		continue;
 	    }
 
 	    int jamo = currentSyllable.getFinall().getJamo();
 
 	    if (jamo == 1 || jamo == 2 || jamo == 24) {
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(1, Types.FINAL));
+		newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(1)));
 	    }
 
 	    if (jamo == 7 || jamo == 19 || jamo == 20 || jamo == 22 || jamo == 23 || jamo == 25 || jamo == 27) {
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(7, Types.FINAL));
+		newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(7)));
 	    }
 
 	    if (jamo == 17 || jamo == 26) {
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(17, Types.FINAL));
+		newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(17)));
 	    }
 
 	}
 
-	return input;
+	return HangeulWord.ofList(newSyllables);
     }
-
-    // Rule 3
-    // public static String checkSimplificationOfFinalDoubleConsonant(String
-    // input) {
-    //
-    // char[] charArray = input.toCharArray();
-    // StringBuffer output = new StringBuffer();
-    //
-    // for (int i = 0; i < charArray.length; i++) {
-    // String normalize = normalize(charArray[i]);
-    // String substring = normalize.substring(2);
-    //
-    // char[] charArray2 = normalize.toCharArray();
-    // int eins = toJamo(charArray2[0]);
-    // int zwei = toJamo(charArray2[1]);
-    // int drei;
-    //
-    // switch (substring) {
-    // case "ᆪ": // (1) - only first and second not
-    // drei = 1;
-    // break;
-    // case "ᆬ": // (1) - only first and second not
-    // drei = 4;
-    // break;
-    // case "ᆳ": // (1) - only first and second not
-    // drei = 8;
-    // break;
-    // case "ᆴ": // (1) - only first and second not
-    // drei = 8;
-    // break;
-    // case "ᆹ": // (1) - only first and second not
-    // drei = 17;
-    // break;
-    // case "ᆭ": // (2) - first is pronounced and the second transforms
-    // drei = 4;
-    // // TODO
-    // break;
-    // case "ᆶ": // (2) - first is pronounced and the second transforms
-    // drei = 8;
-    // String normalize2 = normalize(charArray[i + 1]);
-    // normalize.substring(0, 1);
-    //
-    // // TODO
-    // break;
-    // case "ᆱ": // (3) - first not, second pronounced
-    // drei = 16;
-    // break;
-    // case "ᆵ": // (3) - first not, second pronounced
-    // drei = 26;
-    // default:
-    // toJamo(charArray[2]);
-    // break;
-    // }
-    //
-    // // (2) - first is pronounced and the second transforms
-    //
-    // // (3) - first not, second pronounced
-    // // (4) - either first or second (exception to the rules)
-    //
-    // // if (substring.equals("ᆪ") || substring.equals("ᆬ") ||
-    // // substring.equals("ᆳ") || substring.equals("ᆴ")
-    // // || substring.equals("ᆹ")) {
-    // //
-    // // }
-    //
-    // }
-    //
-    // return null;
-    // }
 
     // rule 3
     public static HangeulWord checkSimplificationOfFinalDoubleConsonant(HangeulWord input) {
-
+	checkNotNull(input);
 	List<HangeulSyllable> syllables = input.getSyllables();
+	List<HangeulSyllable> newSyllables = new LinkedList<>(syllables);
 
 	for (int i = 0; i < syllables.size(); i++) {
 
 	    HangeulSyllable currentSyllable = syllables.get(i);
+	    FinalConsonant finalConsonant = currentSyllable.getFinall();
 
-	    if (currentSyllable.getFinall() == null) {
+	    if (finalConsonant == FinalConsonant.EMPTY) {
 		continue;
 	    }
 
-	    int finalJamo = currentSyllable.getFinall().getJamo();
-
-	    // ᆪ
-	    if (finalJamo == 3) {
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(1, Types.FINAL));
+	    if (finalConsonant == FinalConsonant.ㄳ) {
+		newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄱ));
 	    }
 
-	    // ᆬ
-	    if (finalJamo == 5) {
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
-	    }
-	    // ᆳ
-	    if (finalJamo == 12) {
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+	    if (finalConsonant == FinalConsonant.ㄵ) {
+		newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄴ));
 	    }
 
-	    // ᆴ
-	    if (finalJamo == 13) {
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+	    if (finalConsonant == FinalConsonant.ㄽ) {
+		newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄹ));
 	    }
 
-	    // ᆹ
-	    if (finalJamo == 18) {
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(17, Types.FINAL));
+	    if (finalConsonant == FinalConsonant.ㄾ) {
+		newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄹ));
+	    }
+
+	    if (finalConsonant == FinalConsonant.ㅄ) {
+		newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㅂ));
 	    }
 
 	    // (2) - first is pronounced and the second transforms
-	    if (finalJamo == 6) {
+	    if (finalConsonant == FinalConsonant.ㄶ) {
+		HangeulSyllable nextSyllable = syllables.get(i + 1);
+		InitialConsonant nextInitial = nextSyllable.getInitial();
 
-		HangeulSyllable nextSyllabe = syllables.get(i + 1);
+		if (nextInitial == InitialConsonant.ㄱ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄴ));
+		    newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ㅋ));
+		}
 
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+		if (nextInitial == InitialConsonant.ㄷ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄴ));
+		    newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ㅌ));
+		}
 
+		if (nextInitial == InitialConsonant.ㅈ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄴ));
+		    newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ㅊ));
+		}
+
+		if (nextInitial == InitialConsonant.ㄴ || nextInitial == InitialConsonant.ㅅ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄴ));
+		}
 	    }
 
-	    if (finalJamo == 15) {
+	    if (finalConsonant == FinalConsonant.ㅀ) {
+		HangeulSyllable nextSyllable = syllables.get(i + 1);
+		InitialConsonant nextInitial = nextSyllable.getInitial();
+
+		if (nextInitial == InitialConsonant.ㄱ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄹ));
+		    newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ㅋ));
+		}
+
+		if (nextInitial == InitialConsonant.ㄷ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄹ));
+		    newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ㅌ));
+		}
+
+		if (nextInitial == InitialConsonant.ㅈ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄹ));
+		    newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ㅊ));
+		}
+
+		if (nextInitial == InitialConsonant.ㄴ || nextInitial == InitialConsonant.ㅅ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄹ));
+		}
+	    }
+
+	    if (finalConsonant == FinalConsonant.ㅀ) {
 
 	    }
 
 	    // (3) - first not, second pronounced
-	    if (finalJamo == 10) {
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(16, Types.FINAL));
+	    if (finalConsonant == FinalConsonant.ㄻ) {
+		newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㅁ));
 	    }
-	    if (finalJamo == 14) {
-		currentSyllable.replaceFinal(HangeulChar.ofJamo(26, Types.FINAL));
+	    if (finalConsonant == FinalConsonant.ㄿ) {
+		newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㅍ));
 	    }
 
 	    // (4) - either first or second (exception to the rules)
+	    // TODO
 	}
 
-	return input;
+	return HangeulWord.ofList(newSyllables);
     }
 
     // rule4
     public static HangeulWord checkNasalization(HangeulWord input) {
+	checkNotNull(input);
 
 	List<HangeulSyllable> syllables = input.getSyllables();
+	List<HangeulSyllable> newSyllables = new LinkedList<>(syllables);
 
 	for (int i = 0; i < syllables.size(); i++) {
 
@@ -210,39 +201,40 @@ public class PronounciationRules {
 
 	    HangeulSyllable currentSyllable = syllables.get(i);
 
-	    if (currentSyllable.getFinall() == null) {
+	    if (currentSyllable.getFinall() == FinalConsonant.EMPTY) {
 		continue;
 	    }
 
-	    int currentFinalJamo = currentSyllable.getFinall().getJamo();
-	    int nextInitialJamo = syllables.get(i + 1).getInitial().getJamo();
+	    FinalConsonant currentFinal = currentSyllable.getFinall();
+	    InitialConsonant nextInitial = syllables.get(i + 1).getInitial();
 
-	    if (currentFinalJamo == 1) {
-		if (nextInitialJamo == 2 || nextInitialJamo == 6 || nextInitialJamo == 11) {
-		    currentSyllable.replaceFinal(HangeulChar.ofJamo(21, Types.FINAL));
+	    if (nextInitial == InitialConsonant.ㄴ || nextInitial == InitialConsonant.ㅁ
+		    || nextInitial == InitialConsonant.ㅇ) {
+
+		if (currentFinal == FinalConsonant.ㄱ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㅇ));
 		}
-	    }
 
-	    if (currentFinalJamo == 7) {
-		if (nextInitialJamo == 2 || nextInitialJamo == 6 || nextInitialJamo == 11) {
-		    currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+		if (currentFinal == FinalConsonant.ㄷ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄴ));
 		}
-	    }
 
-	    if (currentFinalJamo == 17) {
-		if (nextInitialJamo == 2 || nextInitialJamo == 6 || nextInitialJamo == 11) {
-		    currentSyllable.replaceFinal(HangeulChar.ofJamo(16, Types.FINAL));
+		if (currentFinal == FinalConsonant.ㅂ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㅁ));
 		}
 	    }
 	}
 
-	return input;
+	return HangeulWord.ofList(newSyllables);
     }
 
     // rule5
     public static HangeulWord checkFortis(HangeulWord input) {
+	checkNotNull(input);
 
 	List<HangeulSyllable> syllables = input.getSyllables();
+	List<HangeulSyllable> newSyllables = new LinkedList<>(syllables);
+
 	for (int i = 0; i < syllables.size(); i++) {
 
 	    if (i == syllables.size() - 1) {
@@ -250,16 +242,19 @@ public class PronounciationRules {
 	    }
 
 	    HangeulSyllable currentSyllable = syllables.get(i);
-	    int currentJamo = currentSyllable.getFinall().getJamo();
+	    FinalConsonant currentFinal = currentSyllable.getFinall();
 
 	    // TODO: sind das alle obstruents?
-	    if (currentJamo == 1 || currentJamo == 7 || currentJamo == 17 || currentJamo == 19 || currentJamo == 22) {
-		HangeulSyllable nextSyllable = syllables.get(i + 1);
-		int nextInitialJamo = nextSyllable.getInitial().getJamo();
 
-		if (nextInitialJamo == 0 || nextInitialJamo == 3 || nextInitialJamo == 7 || nextInitialJamo == 9
-			|| nextInitialJamo == 12) {
-		    nextSyllable.replaceInitial(HangeulChar.ofJamo(nextInitialJamo + 1, Types.INITIAL));
+	    if (currentFinal == ㄱ || currentFinal == ㄷ || currentFinal == ㅂ || currentFinal == ㅅ || currentFinal == ㅈ) {
+		HangeulSyllable nextSyllable = syllables.get(i + 1);
+		InitialConsonant nextInitial = nextSyllable.getInitial();
+
+		if (nextInitial == InitialConsonant.ㄱ || nextInitial == InitialConsonant.ㄷ
+			|| nextInitial == InitialConsonant.ㅂ || nextInitial == InitialConsonant.ㅅ
+			|| nextInitial == InitialConsonant.ㅈ) {
+		    newSyllables.set(i + 1,
+			    nextSyllable.replaceInitial(InitialConsonant.ofJamo(nextInitial.getJamo() + 1)));
 		}
 	    }
 	}
@@ -269,53 +264,59 @@ public class PronounciationRules {
 
     // rule6
     public static HangeulWord checkAspiration(HangeulWord input) {
+	checkNotNull(input);
+
 	List<HangeulSyllable> syllables = input.getSyllables();
+	List<HangeulSyllable> newSyllables = new LinkedList<>(syllables);
 
 	for (int i = 0; i < syllables.size(); i++) {
 	    HangeulSyllable currentSyllable = syllables.get(i);
 
 	    if (currentSyllable.getInitial().getJamo() == 18) {
+		if (i == 0) {
+		    continue;
+		}
 		HangeulSyllable previousSyllable = syllables.get(i - 1);
 
 		int prevJamo = previousSyllable.getFinall().getJamo();
 
 		if (prevJamo == 1) {
-		    previousSyllable.replaceFinal(null);
-		    currentSyllable.replaceInitial(HangeulChar.ofJamo(15, Types.INITIAL));
+		    newSyllables.set(i - 1, previousSyllable.replaceFinal(FinalConsonant.EMPTY));
+		    newSyllables.set(i, currentSyllable.replaceInitial(InitialConsonant.ofJamo(15)));
 		}
 
 		if (prevJamo == 7) {
-		    previousSyllable.replaceFinal(null);
-		    currentSyllable.replaceInitial(HangeulChar.ofJamo(16, Types.INITIAL));
+		    newSyllables.set(i - 1, previousSyllable.replaceFinal(FinalConsonant.EMPTY));
+		    newSyllables.set(i, currentSyllable.replaceInitial(InitialConsonant.ofJamo(16)));
 		}
 
 		if (prevJamo == 17) {
-		    previousSyllable.replaceFinal(null);
-		    currentSyllable.replaceInitial(HangeulChar.ofJamo(17, Types.INITIAL));
+		    newSyllables.set(i - 1, previousSyllable.replaceFinal(FinalConsonant.EMPTY));
+		    newSyllables.set(i, currentSyllable.replaceInitial(InitialConsonant.ofJamo(17)));
 		}
 
 		if (prevJamo == 22) {
-		    previousSyllable.replaceFinal(null);
-		    currentSyllable.replaceInitial(HangeulChar.ofJamo(14, Types.INITIAL));
+		    newSyllables.set(i - 1, previousSyllable.replaceFinal(FinalConsonant.EMPTY));
+		    newSyllables.set(i, currentSyllable.replaceInitial(InitialConsonant.ofJamo(14)));
 		}
 
 		if (prevJamo == 5) {
-		    previousSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
-		    currentSyllable.replaceInitial(HangeulChar.ofJamo(14, Types.INITIAL));
+		    newSyllables.set(i - 1, previousSyllable.replaceFinal(FinalConsonant.ofJamo(4)));
+		    newSyllables.set(i, currentSyllable.replaceInitial(InitialConsonant.ofJamo(14)));
 		}
 
 		if (prevJamo == 9) {
-		    previousSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
-		    currentSyllable.replaceInitial(HangeulChar.ofJamo(15, Types.INITIAL));
+		    newSyllables.set(i - 1, previousSyllable.replaceFinal(FinalConsonant.ofJamo(8)));
+		    newSyllables.set(i, currentSyllable.replaceInitial(InitialConsonant.ofJamo(15)));
 		}
 
 		if (prevJamo == 11) {
-		    previousSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
-		    currentSyllable.replaceInitial(HangeulChar.ofJamo(17, Types.INITIAL));
+		    newSyllables.set(i - 1, previousSyllable.replaceFinal(FinalConsonant.ofJamo(8)));
+		    newSyllables.set(i, currentSyllable.replaceInitial(InitialConsonant.ofJamo(17)));
 		}
 	    }
 
-	    if (currentSyllable.getFinall() != null) {
+	    if (currentSyllable.getFinall() != FinalConsonant.EMPTY) {
 
 		// ㅀ
 		if (currentSyllable.getFinall().getJamo() == 15) {
@@ -323,23 +324,23 @@ public class PronounciationRules {
 		    int nextJamo = nextSyllable.getInitial().getJamo();
 
 		    if (nextJamo == 0) {
-			currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(15, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(8)));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(15)));
 		    }
 
 		    if (nextJamo == 3) {
-			currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(16, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(8)));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(16)));
 		    }
 
 		    if (nextJamo == 7) {
-			currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(17, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(8)));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(17)));
 		    }
 
 		    if (nextJamo == 12) {
-			currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(14, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(8)));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(14)));
 		    }
 		}
 
@@ -349,23 +350,23 @@ public class PronounciationRules {
 		    int nextJamo = nextSyllable.getInitial().getJamo();
 
 		    if (nextJamo == 0) {
-			currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(15, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(4)));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(15)));
 		    }
 
 		    if (nextJamo == 3) {
-			currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(16, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(4)));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(16)));
 		    }
 
 		    if (nextJamo == 7) {
-			currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(17, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(4)));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(17)));
 		    }
 
 		    if (nextJamo == 12) {
-			currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(14, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ofJamo(4)));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(14)));
 		    }
 		}
 
@@ -375,23 +376,23 @@ public class PronounciationRules {
 		    int nextJamo = nextSyllable.getInitial().getJamo();
 
 		    if (nextJamo == 0) {
-			currentSyllable.replaceFinal(null);
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(15, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.EMPTY));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(15)));
 		    }
 
 		    if (nextJamo == 3) {
-			currentSyllable.replaceFinal(null);
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(16, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.EMPTY));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(16)));
 		    }
 
 		    if (nextJamo == 7) {
-			currentSyllable.replaceFinal(null);
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(17, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.EMPTY));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(17)));
 		    }
 
 		    if (nextJamo == 12) {
-			currentSyllable.replaceFinal(null);
-			nextSyllable.replaceInitial(HangeulChar.ofJamo(14, Types.INITIAL));
+			newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.EMPTY));
+			newSyllables.set(i + 1, nextSyllable.replaceInitial(InitialConsonant.ofJamo(14)));
 		    }
 		}
 	    }
@@ -402,88 +403,93 @@ public class PronounciationRules {
 
     // rule 7
     public static HangeulWord checkPalatalization(HangeulWord input) {
+	checkNotNull(input);
 
 	List<HangeulSyllable> syllables = input.getSyllables();
+	List<HangeulSyllable> newSyllabes = new LinkedList<>(syllables);
 
 	for (int i = 0; i < syllables.size(); i++) {
-
-	    HangeulSyllable currentSyllable = syllables.get(i);
-
-	    if (currentSyllable.getFinall() == null) {
-		continue;
-	    }
-
 	    if (i == syllables.size() - 1) {
 		break;
 	    }
 
-	    HangeulChar finalConsonant = currentSyllable.getFinall();
-	    HangeulSyllable nextSyllable = syllables.get(i + 1);
+	    HangeulSyllable currentSyllable = syllables.get(i);
 
-	    if (finalConsonant.getJamo() == 7) {
-		if (nextSyllable.getInitial().getJamo() == 11 && nextSyllable.getMedial().getJamo() == 20) {
-		    currentSyllable.replaceFinal(HangeulChar.ofJamo(22, Types.FINAL));
+	    if (currentSyllable.getFinall() == FinalConsonant.EMPTY) {
+		continue;
+	    }
+
+	    FinalConsonant finalConsonant = currentSyllable.getFinall();
+	    InitialConsonant nextInitial = syllables.get(i + 1).getInitial();
+	    MedialVowel nextMedial = syllables.get(i + 1).getMedial();
+
+	    if (finalConsonant == FinalConsonant.ㄷ) {
+		if (nextInitial == InitialConsonant.ㅇ && nextMedial == MedialVowel.ㅣ) {
+		    newSyllabes.set(i, currentSyllable.replaceFinal(FinalConsonant.ㅈ));
 		}
 	    }
 
-	    if (finalConsonant.getJamo() == 25) {
-		if (nextSyllable.getInitial().getJamo() == 18 && nextSyllable.getMedial().getJamo() == 20) {
-		    currentSyllable.replaceFinal(HangeulChar.ofJamo(23, Types.FINAL));
+	    if (finalConsonant == FinalConsonant.ㅌ) {
+		if (nextInitial == InitialConsonant.ㅎ && nextMedial == MedialVowel.ㅣ) {
+		    newSyllabes.set(i, currentSyllable.replaceFinal(FinalConsonant.ㅊ));
 		}
 	    }
 	}
 
-	return input;
+	return HangeulWord.ofList(newSyllabes);
     }
 
     // rule 8
     public static HangeulWord checkHOmission(HangeulWord input) {
+	checkNotNull(input);
+
 	List<HangeulSyllable> syllables = input.getSyllables();
+	List<HangeulSyllable> newSyllables = new LinkedList<>(syllables);
+
 	for (int i = 0; i < syllables.size(); i++) {
-	    HangeulSyllable currentSyllable = syllables.get(i);
-
-	    if (currentSyllable.getFinall() == null) {
-		continue;
-	    }
-
 	    if (i == syllables.size() - 1) {
 		break;
 	    }
 
-	    HangeulChar finalConsonant = currentSyllable.getFinall();
-	    HangeulSyllable nextSyllable = syllables.get(i + 1);
+	    HangeulSyllable currentSyllable = syllables.get(i);
 
-	    if (finalConsonant.getJamo() == 27) {
-		if (nextSyllable.getInitial().getJamo() == 11) {
-		    currentSyllable.replaceFinal(null);
+	    if (currentSyllable.getFinall() == FinalConsonant.EMPTY) {
+		continue;
+	    }
+
+	    FinalConsonant finalConsonant = currentSyllable.getFinall();
+	    InitialConsonant nextInitial = syllables.get(i + 1).getInitial();
+
+	    if (finalConsonant == FinalConsonant.ㅎ) {
+		if (nextInitial == InitialConsonant.ㅇ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.EMPTY));
 		}
-	    } else if (finalConsonant.getJamo() == 6) {
-		if (nextSyllable.getInitial().getJamo() == 11) {
-		    currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+	    } else if (finalConsonant == FinalConsonant.ㄶ) {
+		if (nextInitial == InitialConsonant.ㅇ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄴ));
 		}
-	    } else if (finalConsonant.getJamo() == 15) {
-		if (nextSyllable.getInitial().getJamo() == 11) {
-		    currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+	    } else if (finalConsonant == FinalConsonant.ㅀ) {
+		if (nextInitial == InitialConsonant.ㅇ) {
+		    newSyllables.set(i, currentSyllable.replaceFinal(FinalConsonant.ㄹ));
 		}
 	    }
 	}
 
-	return input;
+	return HangeulWord.ofList(newSyllables);
     }
 
     public static void main(String[] args) {
 	// // rule1
 	// System.out.println("#### RULE 1 ####");
-	// List<String> asList = Arrays.asList("꽃이", "옷을", "먹어요", "밥이", "부엌에",
-	// "닫아요", "문어", "마음에", "살아요");
-	// asList.stream().map(HangeulWord::of).map(PronounciationRules::checkLinking).forEach(System.out::println);
-	//
+	// Arrays.asList("꽃이", "옷을", "먹어요", "밥이", "부엌에", "닫아요", "문어", "마음에",
+	// "살아요").stream().map(HangeulWord::ofString)
+	// .map(PronounciationRules::checkLinking).forEach(System.out::println);
+
 	// // rule2
 	// System.out.println("#### RULE 2 ####");
-	// List<String> asList2 = Arrays.asList("국", "부엌", "밖", "곧", "다섯", "갔다",
-	// "빚", "빛", "끝", "하읗", "밥", "숲");
-	// asList2.stream().map(HangeulWord::of).map(PronounciationRules::checkNeutralization)
-	// .forEach(System.out::println);
+	// Arrays.asList("국", "부엌", "밖", "곧", "다섯", "갔다", "빚", "빛", "끝", "하읗",
+	// "밥", "숲").stream()
+	// .map(HangeulWord::ofString).map(PronounciationRules::checkNeutralization).forEach(System.out::println);
 
 	// // rule 3
 	// System.out.println("#### RULE 3 (1) ####");
@@ -492,9 +498,10 @@ public class PronounciationRules {
 	// "몫").stream().map(HangeulWord::of)
 	// .map(PronounciationRules::checkSimplificationOfFinalDoubleConsonant).forEach(System.out::println);
 
-	System.out.println("#### RULE 3 (2) ####");
-	Arrays.asList("많고", "많다", "많지", "싫고", "싫다", "싫지").stream().map(HangeulWord::of)
-		.map(PronounciationRules::checkSimplificationOfFinalDoubleConsonant).forEach(System.out::println);
+	// System.out.println("#### RULE 3 (2) ####");
+	// Arrays.asList("많고", "많다", "많지", "싫고", "싫다",
+	// "싫지").stream().map(HangeulWord::ofString)
+	// .map(PronounciationRules::checkSimplificationOfFinalDoubleConsonant).forEach(System.out::println);
 
 	// System.out.println("#### RULE 3 (3) ####");
 	// Arrays.asList("삶", "굶다", "읊다", "읊지").stream().map(HangeulWord::of)
@@ -504,7 +511,7 @@ public class PronounciationRules {
 	// System.out.println("#### RULE 4 ####");
 	// // TODO: watch 앞마당 and 있는 !!
 	// Arrays.asList("앞마당", "믿는다", "한국말", "입는", "있는",
-	// "학년").stream().map(HangeulWord::of)
+	// "학년").stream().map(HangeulWord::ofString)
 	// .map(PronounciationRules::checkNasalization).forEach(System.out::println);
 
 	// // rule5

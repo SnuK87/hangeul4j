@@ -1,38 +1,38 @@
 package de.snuk.hangeulj;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
-import de.snuk.hangeulj.model.HangeulChar;
-import de.snuk.hangeulj.model.Types;
+import de.snuk.hangeulj.model.FinalConsonant;
+import de.snuk.hangeulj.model.InitialConsonant;
 
 public class HangeulUtil {
 
-    private static Map<String, String> finalToInitialMap;
+    private static Map<FinalConsonant, InitialConsonant> finalToInitialMap;
 
     static {
 	finalToInitialMap = new HashMap<>();
-	finalToInitialMap.put("11a8", "1100");
-	finalToInitialMap.put("11a9", "1101");
-	finalToInitialMap.put("11ab", "1102");
-	finalToInitialMap.put("11ae", "1103");
-	finalToInitialMap.put("11af", "1105");
-	finalToInitialMap.put("11b7", "1106");
-	finalToInitialMap.put("11b8", "1107");
-	finalToInitialMap.put("11ba", "1109");
-	finalToInitialMap.put("11bb", "110a");
-	finalToInitialMap.put("11bc", "110b");
-	finalToInitialMap.put("11bd", "110c");
-	finalToInitialMap.put("11be", "110e");
-	finalToInitialMap.put("11bf", "110f");
-	finalToInitialMap.put("11c0", "1110");
-	finalToInitialMap.put("11b1", "1111");
-	finalToInitialMap.put("11b2", "1112");
+	finalToInitialMap.put(FinalConsonant.ㄱ, InitialConsonant.ㄱ);
+	finalToInitialMap.put(FinalConsonant.ㄲ, InitialConsonant.ㄲ);
+	finalToInitialMap.put(FinalConsonant.ㄴ, InitialConsonant.ㄴ);
+	finalToInitialMap.put(FinalConsonant.ㄷ, InitialConsonant.ㄷ);
+	finalToInitialMap.put(FinalConsonant.ㄹ, InitialConsonant.ㄹ);
+	finalToInitialMap.put(FinalConsonant.ㅁ, InitialConsonant.ㅁ);
+	finalToInitialMap.put(FinalConsonant.ㅂ, InitialConsonant.ㅂ);
+	finalToInitialMap.put(FinalConsonant.ㅅ, InitialConsonant.ㅅ);
+	finalToInitialMap.put(FinalConsonant.ㅆ, InitialConsonant.ㅆ);
+	finalToInitialMap.put(FinalConsonant.ㅇ, InitialConsonant.ㅇ);
+	finalToInitialMap.put(FinalConsonant.ㅈ, InitialConsonant.ㅈ);
+	finalToInitialMap.put(FinalConsonant.ㅊ, InitialConsonant.ㅊ);
+	finalToInitialMap.put(FinalConsonant.ㅋ, InitialConsonant.ㅋ);
+	finalToInitialMap.put(FinalConsonant.ㅌ, InitialConsonant.ㅌ);
+	finalToInitialMap.put(FinalConsonant.ㅍ, InitialConsonant.ㅍ);
+	finalToInitialMap.put(FinalConsonant.ㅎ, InitialConsonant.ㅎ);
     }
 
     public static String normalize(char input) {
@@ -62,86 +62,6 @@ public class HangeulUtil {
 	return retVal;
     }
 
-    // jamo to unicode
-    public static String toUnicode(int input, Types type) {
-
-	String retVal = "";
-	String hex;
-
-	switch (type) {
-	case INITIAL:
-	    hex = Integer.toHexString(input);
-	    if (input <= 15) {
-		retVal = "110" + hex;
-	    } else {
-		retVal = "11" + hex;
-	    }
-	    break;
-	case MEDIAL:
-	    input = input + 1;
-	    hex = Integer.toHexString(input);
-
-	    if (input <= 15) {
-		retVal = "116" + hex;
-	    } else {
-		retVal = "117" + hex.charAt(1);
-	    }
-	    break;
-	case FINAL:
-	    // TODO return val bei 0?
-	    if (input > 0) {
-		input = input + 7;
-		hex = Integer.toHexString(input);
-		if (input <= 15) {
-		    retVal = "11A" + hex;
-		} else if (input <= 31) {
-		    retVal = "11B" + hex.charAt(1);
-		} else {
-		    retVal = "11C" + hex.charAt(1);
-		}
-	    }
-
-	    break;
-	default:
-	    break;
-
-	}
-
-	return retVal;
-    }
-
-    public static Optional<Types> getType(char input) {
-	String hexString = Integer.toHexString(input);
-	int decimal = Integer.parseInt(hexString, 16);
-	Optional<Types> retVal = Optional.empty();
-
-	if (decimal >= 4352 && decimal <= 4370) {
-	    retVal = Optional.of(Types.INITIAL);
-	}
-
-	if (decimal >= 4449 && decimal <= 4469) {
-	    retVal = Optional.of(Types.MEDIAL);
-	}
-
-	if (decimal >= 4520 && decimal <= 4546) {
-	    retVal = Optional.of(Types.FINAL);
-	}
-
-	return retVal;
-    }
-
-    public static void main(String[] args) {
-	char a = 'ᄂ';
-	char b = 'ᄦ';
-
-	Optional<Types> type = getType(a);
-	Optional<Types> type2 = getType(b);
-
-	System.out.println(type.orElseThrow(() -> new NullPointerException()));
-	System.out.println(type2.orElseThrow(() -> new NullPointerException()));
-
-    }
-
     /**
      * Composes a syllable of the given jamo values.
      *
@@ -166,13 +86,11 @@ public class HangeulUtil {
      * @param input
      * @return
      */
-    public static HangeulChar convertFinalToInitialString(HangeulChar input) {
-	String unicode = input.getUnicode().toLowerCase();
-	String string = finalToInitialMap.get(unicode);
-	int parseInt = Integer.parseInt(string, 16);
 
-	HangeulChar of = HangeulChar.of((char) parseInt);
+    public static InitialConsonant convertFinalToInitial(FinalConsonant input) {
+	InitialConsonant initialConsonant = finalToInitialMap.get(input);
+	checkState(initialConsonant != null, "Unable to Convert FinalConsonant: " + input);
 
-	return of;
+	return initialConsonant;
     }
 }
