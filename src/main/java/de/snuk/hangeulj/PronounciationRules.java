@@ -172,7 +172,11 @@ public class PronounciationRules {
 
 	    // (2) - first is pronounced and the second transforms
 	    if (finalJamo == 6) {
+
+		HangeulSyllable nextSyllabe = syllables.get(i + 1);
+
 		currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+
 	    }
 
 	    if (finalJamo == 15) {
