@@ -1,8 +1,5 @@
 package de.snuk.hangeulj;
 
-import static de.snuk.hangeulj.HangeulUtil.normalize;
-import static de.snuk.hangeulj.HangeulUtil.toJamo;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -66,71 +63,134 @@ public class PronounciationRules {
     }
 
     // Rule 3
-    public static String checkSimplificationOfFinalDoubleConsonant(String input) {
+    // public static String checkSimplificationOfFinalDoubleConsonant(String
+    // input) {
+    //
+    // char[] charArray = input.toCharArray();
+    // StringBuffer output = new StringBuffer();
+    //
+    // for (int i = 0; i < charArray.length; i++) {
+    // String normalize = normalize(charArray[i]);
+    // String substring = normalize.substring(2);
+    //
+    // char[] charArray2 = normalize.toCharArray();
+    // int eins = toJamo(charArray2[0]);
+    // int zwei = toJamo(charArray2[1]);
+    // int drei;
+    //
+    // switch (substring) {
+    // case "ᆪ": // (1) - only first and second not
+    // drei = 1;
+    // break;
+    // case "ᆬ": // (1) - only first and second not
+    // drei = 4;
+    // break;
+    // case "ᆳ": // (1) - only first and second not
+    // drei = 8;
+    // break;
+    // case "ᆴ": // (1) - only first and second not
+    // drei = 8;
+    // break;
+    // case "ᆹ": // (1) - only first and second not
+    // drei = 17;
+    // break;
+    // case "ᆭ": // (2) - first is pronounced and the second transforms
+    // drei = 4;
+    // // TODO
+    // break;
+    // case "ᆶ": // (2) - first is pronounced and the second transforms
+    // drei = 8;
+    // String normalize2 = normalize(charArray[i + 1]);
+    // normalize.substring(0, 1);
+    //
+    // // TODO
+    // break;
+    // case "ᆱ": // (3) - first not, second pronounced
+    // drei = 16;
+    // break;
+    // case "ᆵ": // (3) - first not, second pronounced
+    // drei = 26;
+    // default:
+    // toJamo(charArray[2]);
+    // break;
+    // }
+    //
+    // // (2) - first is pronounced and the second transforms
+    //
+    // // (3) - first not, second pronounced
+    // // (4) - either first or second (exception to the rules)
+    //
+    // // if (substring.equals("ᆪ") || substring.equals("ᆬ") ||
+    // // substring.equals("ᆳ") || substring.equals("ᆴ")
+    // // || substring.equals("ᆹ")) {
+    // //
+    // // }
+    //
+    // }
+    //
+    // return null;
+    // }
 
-	char[] charArray = input.toCharArray();
-	StringBuffer output = new StringBuffer();
+    // rule 3
+    public static HangeulWord checkSimplificationOfFinalDoubleConsonant(HangeulWord input) {
 
-	for (int i = 0; i < charArray.length; i++) {
-	    String normalize = normalize(charArray[i]);
-	    String substring = normalize.substring(2);
+	List<HangeulSyllable> syllables = input.getSyllables();
 
-	    char[] charArray2 = normalize.toCharArray();
-	    int eins = toJamo(charArray2[0]);
-	    int zwei = toJamo(charArray2[1]);
-	    int drei;
+	for (int i = 0; i < syllables.size(); i++) {
 
-	    switch (substring) {
-	    case "ᆪ": // (1) - only first and second not
-		drei = 1;
-		break;
-	    case "ᆬ": // (1) - only first and second not
-		drei = 4;
-		break;
-	    case "ᆳ": // (1) - only first and second not
-		drei = 8;
-		break;
-	    case "ᆴ": // (1) - only first and second not
-		drei = 8;
-		break;
-	    case "ᆹ": // (1) - only first and second not
-		drei = 17;
-		break;
-	    case "ᆭ": // (2) - first is pronounced and the second transforms
-		drei = 4;
-		// TODO
-		break;
-	    case "ᆶ": // (2) - first is pronounced and the second transforms
-		drei = 8;
-		String normalize2 = normalize(charArray[i + 1]);
-		normalize.substring(0, 1);
+	    HangeulSyllable currentSyllable = syllables.get(i);
 
-		// TODO
-		break;
-	    case "ᆱ": // (3) - first not, second pronounced
-		drei = 16;
-		break;
-	    case "ᆵ": // (3) - first not, second pronounced
-		drei = 26;
-	    default:
-		toJamo(charArray[2]);
-		break;
+	    if (currentSyllable.getFinall() == null) {
+		continue;
+	    }
+
+	    int finalJamo = currentSyllable.getFinall().getJamo();
+
+	    // ᆪ
+	    if (finalJamo == 3) {
+		currentSyllable.replaceFinal(HangeulChar.ofJamo(1, Types.FINAL));
+	    }
+
+	    // ᆬ
+	    if (finalJamo == 5) {
+		currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+	    }
+	    // ᆳ
+	    if (finalJamo == 12) {
+		currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+	    }
+
+	    // ᆴ
+	    if (finalJamo == 13) {
+		currentSyllable.replaceFinal(HangeulChar.ofJamo(8, Types.FINAL));
+	    }
+
+	    // ᆹ
+	    if (finalJamo == 18) {
+		currentSyllable.replaceFinal(HangeulChar.ofJamo(17, Types.FINAL));
 	    }
 
 	    // (2) - first is pronounced and the second transforms
+	    if (finalJamo == 6) {
+		currentSyllable.replaceFinal(HangeulChar.ofJamo(4, Types.FINAL));
+	    }
+
+	    if (finalJamo == 15) {
+
+	    }
 
 	    // (3) - first not, second pronounced
+	    if (finalJamo == 10) {
+		currentSyllable.replaceFinal(HangeulChar.ofJamo(16, Types.FINAL));
+	    }
+	    if (finalJamo == 14) {
+		currentSyllable.replaceFinal(HangeulChar.ofJamo(26, Types.FINAL));
+	    }
+
 	    // (4) - either first or second (exception to the rules)
-
-	    // if (substring.equals("ᆪ") || substring.equals("ᆬ") ||
-	    // substring.equals("ᆳ") || substring.equals("ᆴ")
-	    // || substring.equals("ᆹ")) {
-	    //
-	    // }
-
 	}
 
-	return null;
+	return input;
     }
 
     // rule4
@@ -408,16 +468,33 @@ public class PronounciationRules {
     }
 
     public static void main(String[] args) {
-	// rule1
-	System.out.println("#### RULE 1 ####");
-	List<String> asList = Arrays.asList("꽃이", "옷을", "먹어요", "밥이", "부엌에", "닫아요", "문어", "마음에", "살아요");
-	asList.stream().map(HangeulWord::of).map(PronounciationRules::checkLinking).forEach(System.out::println);
+	// // rule1
+	// System.out.println("#### RULE 1 ####");
+	// List<String> asList = Arrays.asList("꽃이", "옷을", "먹어요", "밥이", "부엌에",
+	// "닫아요", "문어", "마음에", "살아요");
+	// asList.stream().map(HangeulWord::of).map(PronounciationRules::checkLinking).forEach(System.out::println);
+	//
+	// // rule2
+	// System.out.println("#### RULE 2 ####");
+	// List<String> asList2 = Arrays.asList("국", "부엌", "밖", "곧", "다섯", "갔다",
+	// "빚", "빛", "끝", "하읗", "밥", "숲");
+	// asList2.stream().map(HangeulWord::of).map(PronounciationRules::checkNeutralization)
+	// .forEach(System.out::println);
 
-	// rule2
-	System.out.println("#### RULE 2 ####");
-	List<String> asList2 = Arrays.asList("국", "부엌", "밖", "곧", "다섯", "갔다", "빚", "빛", "끝", "하읗", "밥", "숲");
-	asList2.stream().map(HangeulWord::of).map(PronounciationRules::checkNeutralization)
-		.forEach(System.out::println);
+	// // rule 3
+	// System.out.println("#### RULE 3 (1) ####");
+	// // TODO: watch 외곬 !!
+	// Arrays.asList("넋", "앉다", "외곬", "핥다", "값",
+	// "몫").stream().map(HangeulWord::of)
+	// .map(PronounciationRules::checkSimplificationOfFinalDoubleConsonant).forEach(System.out::println);
+
+	System.out.println("#### RULE 3 (2) ####");
+	Arrays.asList("많고", "많다", "많지", "싫고", "싫다", "싫지").stream().map(HangeulWord::of)
+		.map(PronounciationRules::checkSimplificationOfFinalDoubleConsonant).forEach(System.out::println);
+
+	// System.out.println("#### RULE 3 (3) ####");
+	// Arrays.asList("삶", "굶다", "읊다", "읊지").stream().map(HangeulWord::of)
+	// .map(PronounciationRules::checkSimplificationOfFinalDoubleConsonant).forEach(System.out::println);
 
 	// // rule 4
 	// System.out.println("#### RULE 4 ####");
