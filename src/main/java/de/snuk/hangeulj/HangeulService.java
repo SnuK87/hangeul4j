@@ -1,214 +1,165 @@
 package de.snuk.hangeulj;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import de.snuk.hangeulj.model.HangeulWord;
+import de.snuk.hangeulj.model.Result;
 
 public class HangeulService {
 
-    public static Result check(HangeulWord input) {
-	Result result = new Result(input);
+	private static Function<Result, Result> rule1 = r -> {
+		HangeulWord input = r.getOutput();
+		HangeulWord output = PronounciationRules.checkLinking(r.getOutput());
+		r.setOutput(output);
 
-	HangeulWord word1 = PronounciationRules.checkLinking(input);
-	result.setRule1(input.equals(word1) ? false : true);
+		if (!r.isRule1()) {
+			r.setRule1(!input.equals(output));
+		}
 
-	HangeulWord word2 = PronounciationRules.checkNeutralization(word1);
-	result.setRule2(word1.equals(word2) ? false : true);
+		return r;
+	};
 
-	HangeulWord word3 = PronounciationRules.checkSimplificationOfFinalDoubleConsonant(word2);
-	result.setRule3(word2.equals(word3) ? false : true);
+	private static Function<Result, Result> rule2 = r -> {
+		HangeulWord input = r.getOutput();
+		HangeulWord output = PronounciationRules.checkNeutralization(r.getOutput());
+		r.setOutput(output);
 
-	HangeulWord word4 = PronounciationRules.checkNasalization(word3);
-	result.setRule4(word3.equals(word4) ? false : true);
+		if (!r.isRule2()) {
+			r.setRule2(!input.equals(output));
+		}
 
-	HangeulWord word5 = PronounciationRules.checkFortis(word4);
-	result.setRule5(word4.equals(word5) ? false : true);
+		return r;
+	};
 
-	HangeulWord word6 = PronounciationRules.checkAspiration(word5);
-	result.setRule6(word5.equals(word6) ? false : true);
+	private static Function<Result, Result> rule3 = r -> {
+		HangeulWord input = r.getOutput();
+		HangeulWord output = PronounciationRules.checkSimplificationOfFinalDoubleConsonant(r.getOutput());
+		r.setOutput(output);
 
-	HangeulWord word7 = PronounciationRules.checkPalatalization(word6);
-	result.setRule7(word6.equals(word7) ? false : true);
+		if (!r.isRule3()) {
+			r.setRule3(!input.equals(output));
+		}
 
-	HangeulWord word8 = PronounciationRules.checkPalatalization(word7);
-	result.setRule8(word7.equals(word8) ? false : true);
+		return r;
+	};
 
-	result.setOutput(word8);
+	private static Function<Result, Result> rule4 = r -> {
+		HangeulWord input = r.getOutput();
+		HangeulWord output = PronounciationRules.checkNasalization(r.getOutput());
+		r.setOutput(output);
 
-	return result;
-    }
+		if (!r.isRule4()) {
+			r.setRule4(!input.equals(output));
+		}
 
-    public static Result checkReverse(HangeulWord input) {
-	Result result = new Result(input);
+		return r;
+	};
 
-	HangeulWord word1 = PronounciationRules.checkHOmission(input);
-	result.setRule1(input.equals(word1) ? false : true);
+	private static Function<Result, Result> rule5 = r -> {
+		HangeulWord input = r.getOutput();
+		HangeulWord output = PronounciationRules.checkFortis(r.getOutput());
+		r.setOutput(output);
 
-	HangeulWord word2 = PronounciationRules.checkPalatalization(word1);
-	result.setRule2(word1.equals(word2) ? false : true);
+		if (!r.isRule5()) {
+			r.setRule5(!input.equals(output));
+		}
 
-	HangeulWord word3 = PronounciationRules.checkAspiration(word2);
-	result.setRule3(word2.equals(word3) ? false : true);
+		return r;
+	};
 
-	HangeulWord word4 = PronounciationRules.checkFortis(word3);
-	result.setRule4(word3.equals(word4) ? false : true);
+	private static Function<Result, Result> rule6 = r -> {
+		HangeulWord input = r.getOutput();
+		HangeulWord output = PronounciationRules.checkAspiration(r.getOutput());
+		r.setOutput(output);
 
-	HangeulWord word5 = PronounciationRules.checkNasalization(word4);
-	result.setRule5(word4.equals(word5) ? false : true);
+		if (!r.isRule6()) {
+			r.setRule6(!input.equals(output));
+		}
 
-	HangeulWord word6 = PronounciationRules.checkSimplificationOfFinalDoubleConsonant(word5);
-	result.setRule6(word5.equals(word6) ? false : true);
+		return r;
+	};
 
-	HangeulWord word7 = PronounciationRules.checkLinking(word6);
-	result.setRule7(word6.equals(word7) ? false : true);
+	private static Function<Result, Result> rule7 = r -> {
+		HangeulWord input = r.getOutput();
+		HangeulWord output = PronounciationRules.checkPalatalization(r.getOutput());
+		r.setOutput(output);
 
-	HangeulWord word8 = PronounciationRules.checkNeutralization(word7);
-	result.setRule8(word7.equals(word8) ? false : true);
+		if (!r.isRule7()) {
+			r.setRule7(!input.equals(output));
+		}
 
-	result.setOutput(word8);
+		return r;
+	};
 
-	return result;
-    }
+	private static Function<Result, Result> rule8 = r -> {
+		HangeulWord input = r.getOutput();
+		HangeulWord output = PronounciationRules.checkHOmission(r.getOutput());
+		r.setOutput(output);
 
-    public static void main(String[] args) {
-	// String in = "먹어요";
-	// String in = "많소";
-	// Result check = check(HangeulWord.ofString(in));
-	// System.out.println(check);
+		if (!r.isRule8()) {
+			r.setRule8(!input.equals(output));
+		}
 
-	// Arrays.asList("꽃이", "옷을", "먹어요", "밥이", "부엌에", "닫아요", "문어", "마음에",
-	// "살아요").stream().map(HangeulWord::ofString)
-	// .map(HangeulService::check).forEach(System.out::println);
+		return r;
+	};
 
-	// Arrays.asList("국", "부엌", "밖", "곧", "다섯", "갔다", "빚", "빛", "끝", "하읗",
-	// "밥", "숲").stream()
-	// .map(HangeulWord::ofString).map(HangeulService::check).forEach(System.out::println);
+	public static void main(String[] args) {
+		List<Function<Result, Result>> rules = Arrays.asList(rule8, rule7, rule1, rule6, rule3, rule5, rule4, rule2);
 
-	// 7
-	// // TODO: watch "굳히다"!!
-	// Arrays.asList("굳이", "맏이", "해돋이", "같이", "끝이",
-	// "굳히다").stream().map(HangeulWord::ofString)
-	// .map(HangeulService::check).forEach(System.out::println);
-	//
-	// System.out.println("########");
-	//
-	// Arrays.asList("굳이", "맏이", "해돋이", "같이", "끝이",
-	// "굳히다").stream().map(HangeulWord::ofString)
-	// .map(HangeulService::checkReverse).forEachOrdered(System.out::println);
+		List<HangeulWord> words1 = Arrays.asList("꽃이", "옷을", "먹어요", "밥이", "부엌에", "닫아요", "문어", "마음에", "살아요").stream()
+				.map(HangeulWord::ofString).collect(Collectors.toList());
 
-	// HangeulWord test =
-	// PronounciationRules.checkPalatalization(HangeulWord.ofString("굳이"));
-	// System.out.println(test);
-	// test = PronounciationRules.checkLinking(test);
-	// System.out.println(test);
+		List<HangeulWord> words2 = Arrays.asList("국", "부엌", "밖", "곧", "다섯", "갔다", "빚", "빛", "끝", "하읗", "밥", "숲")
+				.stream().map(HangeulWord::ofString).collect(Collectors.toList());
 
-	System.out.println(check(HangeulWord.ofString("굳이")));
-	System.out.println(checkReverse(HangeulWord.ofString("굳이")));
-    }
+		List<HangeulWord> words3 = Arrays
+				.asList("넋", "앉다", "외곬", "핥다", "값", "몫", "많고", "많다", "많지", "싫고", "싫다", "싫지", "많소", "많네", "뚫소", "뚫네",
+						"삶", "굶다", "젊다", "읊다", "읊지", "읊고")
+				.stream().map(HangeulWord::ofString).collect(Collectors.toList());
 
-}
+		// TODO: 뚫네
 
-class Result {
+		List<HangeulWord> words4 = Arrays
+				.asList("앞마당", "믿는다", "한국말", "입는", "있는", "학년", "심리", "겅류장", "등록금", "염려", "국립", "대학로").stream()
+				.map(HangeulWord::ofString).collect(Collectors.toList());
 
-    private HangeulWord input;
-    private HangeulWord output;
+		List<HangeulWord> words5 = Arrays.asList("학교", "받다", "꽃밭", "국수", "국자", "책상").stream().map(HangeulWord::ofString)
+				.collect(Collectors.toList());
 
-    private boolean rule1 = false;
-    private boolean rule2 = false;
-    private boolean rule3 = false;
-    private boolean rule4 = false;
-    private boolean rule5 = false;
-    private boolean rule6 = false;
-    private boolean rule7 = false;
-    private boolean rule8 = false;
+		List<HangeulWord> words6 = Arrays.asList("국화", "맏형", "입학", "앉히다", "놓고", "놓다", "놓지", "많다").stream()
+				.map(HangeulWord::ofString).collect(Collectors.toList());
 
-    public Result(HangeulWord input) {
-	this.input = input;
-    }
+		List<HangeulWord> words7 = Arrays.asList("굳이", "맏이", "해돋이", "같이", "끝이", "굳히다").stream()
+				.map(HangeulWord::ofString).collect(Collectors.toList());
 
-    public HangeulWord getInput() {
-	return input;
-    }
+		List<HangeulWord> words8 = Arrays.asList("좋아요", "좋은", "촣을", "많아요", "많은", "많을").stream()
+				.map(HangeulWord::ofString).collect(Collectors.toList());
 
-    public void setInput(HangeulWord input) {
-	this.input = input;
-    }
+		// Result r = new Result(words3.get(1));
+		// r.setOutput(words3.get(1));
+		// r = rule3.apply(r);
+		// System.out.println(r);
+		// r = rule5.apply(r);
+		// System.out.println(r);
 
-    public HangeulWord getOutput() {
-	return output;
-    }
+		for (HangeulWord hangeulWord : words3) {
+			Result res = new Result(hangeulWord);
+			res.setOutput(hangeulWord);
 
-    public void setOutput(HangeulWord output) {
-	this.output = output;
-    }
+			for (Function<Result, Result> rule : rules) {
+				res = rule.apply(res);
+			}
 
-    public boolean isRule1() {
-	return rule1;
-    }
+			for (Function<Result, Result> rule : rules) {
+				res = rule.apply(res);
+			}
 
-    public void setRule1(boolean rule1) {
-	this.rule1 = rule1;
-    }
+			System.out.println(res);
+		}
 
-    @Override
-    public String toString() {
-	return "Result [input=" + input + ", output=" + output + ", rule1=" + rule1 + ", rule2=" + rule2 + ", rule3="
-		+ rule3 + ", rule4=" + rule4 + ", rule5=" + rule5 + ", rule6=" + rule6 + ", rule7=" + rule7 + ", rule8="
-		+ rule8 + "]";
-    }
-
-    public boolean isRule2() {
-	return rule2;
-    }
-
-    public void setRule2(boolean rule2) {
-	this.rule2 = rule2;
-    }
-
-    public boolean isRule3() {
-	return rule3;
-    }
-
-    public void setRule3(boolean rule3) {
-	this.rule3 = rule3;
-    }
-
-    public boolean isRule4() {
-	return rule4;
-    }
-
-    public void setRule4(boolean rule4) {
-	this.rule4 = rule4;
-    }
-
-    public boolean isRule5() {
-	return rule5;
-    }
-
-    public void setRule5(boolean rule5) {
-	this.rule5 = rule5;
-    }
-
-    public boolean isRule6() {
-	return rule6;
-    }
-
-    public void setRule6(boolean rule6) {
-	this.rule6 = rule6;
-    }
-
-    public boolean isRule7() {
-	return rule7;
-    }
-
-    public void setRule7(boolean rule7) {
-	this.rule7 = rule7;
-    }
-
-    public boolean isRule8() {
-	return rule8;
-    }
-
-    public void setRule8(boolean rule8) {
-	this.rule8 = rule8;
-    }
+	}
 
 }
